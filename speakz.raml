@@ -1,0 +1,192 @@
+#%RAML 0.8
+title: SpeakEasy
+baseUri: http://speakz.ca
+version: 0.2
+/:
+  get (nologin):
+    description: Returns a list of most recent 100 posts for all users
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              {
+                messages: 
+                [{
+                    "uri" : "/wightman/posts/345
+                    "displayname" : "wightstuff"
+                    "timePosted": "2010-12-16T12:14:05+00:00",
+                    "messageContents": "This is an example message"
+                    "messageID" : 345            
+                },
+                {
+                    "uri" : "/bogart/posts/344
+                    "displayname" : "Boogers"
+                    "timePosted": "2010-12-16T12:14:03+00:00",
+                    "messageContents": "This is an older example message"               
+                    "messageID" : 344
+                }],
+              }
+  
+/signin: 
+  post:
+    description: Logs in a user, establishes a session
+    body:
+      application/json:
+    example: |
+     { "user" : "BillyJoe",
+        "password" : "I hate Java"
+      }
+    responses:
+      200: #login successful
+      401: #not authorized
+
+/signout:
+  post:
+    description: Logs out a user, destroys the session
+    responses:
+      200: #login successful
+
+/{username}: 
+  description: Profile of {username}
+  get:
+    description: Returns the information for the user, including number 
+      followers, following, mentions
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+             {
+                "username" : "user",
+                "displayName" : "Test User",
+                "tagline" : "Java is my life.",
+                "followers" : 2,
+                "following" : 2,
+                "mentions" : 3
+             }
+      401: #not authorized
+
+  post:
+    description: Submits a new message to the logged in feed
+    body:
+      application/json:
+        example: |
+          { 
+            "messageContents" : "Example message to post."
+          }
+    responses:
+      201: #Successfully added
+        body:
+          application/json:
+            example: |
+              {
+                    "message": {
+                        "uri" : "/wightstuff/posts/345",
+                        "displayname" : "wightstuff",
+                        "timePosted": "2010-12-16T12:14:05+00:00",
+                        "messageContents": "This is a posted message",
+                        "messageID" : 345            
+                    }
+              }
+      401: #not authorized
+
+  /posts/{postid}
+    delete: 
+      description: Delete a specified message if in the logged in feed
+
+  /following:
+     get:
+      description: Returns a list of users this person follows
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  [{
+                      "userName": "JohnDoe",
+                      "schoolID": "3509321"               
+                  },
+                  {
+                      "userName": "JaneDoe",
+                      "schoolID": "3509322"               
+                  }],
+                  "following": 2
+                }
+       401: #not authorized
+
+     post:
+      description: Follow a new person
+      responses:
+      201: #Successfully added
+        body:
+          application/json:
+            example: |
+              {"user": {
+                   "userName": "JaneDoe",
+                   "schoolID": "3509322" 
+              }
+      401: #not authorized
+
+    delete:
+      description: remove a new person
+      responses:
+      200: #Successfully removed
+        body:
+          application/json:
+            example: |
+              {"user": {
+                   "userName": "JaneDoe",
+                   "schoolID": "3509322" 
+              }
+
+  /followers:
+     get:
+      description: Returns the list of users following this person
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  users:
+                  [{
+                      "userName": "JohnDoe",
+                      "schoolID": "3509321"               
+                  },
+                  {
+                      "userName": "JaneDoe",
+                      "schoolID": "3509322"               
+                  }],
+                  "followers": 2
+                }
+      401: #not authorized
+
+  /mentions:
+     get:
+      description: Returns list of mentions of a person.
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "messages": 
+                     [{
+                       "uri" : "/wightstuff/posts/345",
+                       "displayname" : "wightstuff",
+                       "timePosted": "2010-12-16T12:14:05+00:00",
+                       "messageContents": "This is a @user",
+                       "messageID" : 345
+                     },
+                     {
+                       "uri" : "/Boogers/posts/345",
+                       "displayname" : "Boogers",
+                       "timePosted": "2010-10-16T12:04:05+00:00",
+                       "messageContents": "This is a @user",
+                       "messageID" : 222            
+                     }],
+                  "mentions": 2
+                }
+      401: #not authorized
