@@ -1,192 +1,311 @@
 #%RAML 0.8
-title: SpeakEasy
-baseUri: http://speakz.ca
-version: 0.2
-/:
-  get (nologin):
-    description: Returns a list of most recent 100 posts for all users
+title: Speakz API
+version: 0.3
+baseUri: https://www.speakz.ca/
+mediaType: application/json
+
+securitySchemes:
+  - SessionToken:
+      type: x-{session-token}
+      description: Session ID for the logged in user
+      describedBy:
+        headers:
+          X-Session-Token:
+            required: true
+            displayName: Session Token
+            description: Authenticated user session token (UUID || Session ID)
+            type: string
+        responses:
+          401:
+            description: Bad or expired session token. To fix you have to re-authenticate the user.
+      settings:
+        authorizationUri: https://www.speakz.ca/signin
+        
+        
+/posts:
+  displayName: Posts
+  get:
+    description: Retrieve the last 100 post
+    queryParameters:
+      userName:
+        description: Filter by the username. This would allow to show content from users that you are following
+        required: false
+        type: string
+        example: ?username=wightman&username=tweetmaster
+        
     responses:
       200:
         body:
           application/json:
             example: |
-              {
-                messages: 
-                [{
-                    "uri" : "/wightman/posts/345
-                    "displayname" : "wightstuff"
-                    "timePosted": "2010-12-16T12:14:05+00:00",
-                    "messageContents": "This is an example message"
-                    "messageID" : 345            
+              [
+                {
+                  "uri" : "/wightman/posts/345",
+                  "userName" : "wightstuff",
+                  "timestamp": "2010-12-16T12:14:05+00:00",
+                  "content": "This is an example message",
+                  "postID" : 345
                 },
                 {
-                    "uri" : "/bogart/posts/344
-                    "displayname" : "Boogers"
-                    "timePosted": "2010-12-16T12:14:03+00:00",
-                    "messageContents": "This is an older example message"               
-                    "messageID" : 344
-                }],
+                  "uri" : "/wightman/posts/346",
+                  "userName" : "wightstuff",
+                  "timestamp": "2010-12-16T12:14:05+00:00",
+                  "content": "This is an example message",
+                  "postID" : 346
+                }
+              ]
+  /{postID}:
+    uriParameters:
+      postID:
+        displayName: Post ID 
+        description: Post Identifier (UUID)
+        type: string
+        example: "35409e30-ecba-11e5-9ce9-5e5517507c66"
+    delete:
+      description: Deletes the post
+      securedBy: 
+        - SessionToken
+      responses:
+        204:
+          description: Successfully Delete the post
+        400:
+          description: Post ID does not exist
+  /{userName}:
+    uriParameters:
+      userName:
+        displayName: User Name
+        description: Logged In User Name
+        type: string
+    post:
+      description: Create a Post
+      securedBy:
+        - SessionToken
+      body:
+        application/json:
+          example: |
+            {
+              content: "Message Content",
+              timestamp: "<ISO 8601 timestamp>"
+            }
+      responses:
+        201:
+          description: Successfully created the post
+          body:
+            application/json:
+              example: |
+                {
+                  uri: "/wightman/posts/347",
+                  userName: "wightman",
+                  content: "Message Content",
+                  timestamp: "<ISO 8601>",
+                }
+        400:
+          description: Could not create post
+          body:
+            application/json:
+              example: |
+                {
+                  error: "Incorrect Format || Incorrect Timestamp Format"
+                }
+
+/users:
+  displayName: Users 
+  /{userName}:
+    uriParameters:
+      userName:
+        displayName: User Name
+        description: The User Name or Display Name of a user
+        type: string
+        example: "wightman"
+    get:
+      description: Returns the information for the user, including number followers, following, mentions
+      securedBy: 
+        - SessionToken
+      responses:
+        200:
+          description: Successfull response
+          body:
+            application/json:
+              example: |
+                {
+                  "tagLine" : "Java is my life.",
+                  "followers" : 2,
+                  "following" : 2,
+                  "mentions" : 3
+                }
+        400:
+          description: Username does not exist
+          body:
+            application/json:
+              example: |
+                {
+                  error: "Username does not exist"
+                }
+    /following:
+      get:
+        description: Returns a list of users that the current user is following
+        securedBy:
+          -  SessionToken
+        responses:
+          200:
+            description: Successfull Request
+            body:
+              application/json:
+                example: |
+                  [
+                    {
+                      userName: "TweetMaster",
+                      uri: "/users/tweetmaster"
+                    },
+                    {
+                      userName: "TweetMaster2",
+                      uri: "/users/tweetmaster2"
+                    }
+                  ]
+          400:
+            description: Username does not exist
+            body:
+              application/json:
+                example: | 
+                  {
+                    error: "Username does not exist"
+                  }
+      post:
+        description: Follow a new person
+        securedBy:
+          - SessionToken
+        body:
+          application/json:
+            example: |
+              {
+                userName: "TweetMaster"
               }
-  
-/signin: 
+        responses:
+          200:
+            description: Successfully followed someone
+          400:
+            description: Username does not exist || Follower Username does not exist
+            body:
+              application/json:
+                example: | 
+                  {
+                    error: "Username does not exist || Follower Username does not exist"
+                  }
+      
+
+      /{followingUserName}:
+        uriParameters:
+          followingUserName:
+            displayName: Following User Name
+            description: Username of the person that the current user is following
+            type: string
+            example: "TweetMaster2"
+        delete:
+          description: Unfollow a user
+          securedBy:
+            - SessionToken
+          responses:
+            200:
+              description: Successfully unfollower the user
+            400:
+              description: Username does not exist || followingUserName does not exist
+              body:
+                application/json:
+                  example: |
+                    {
+                      error: "Username does not exist || followingUserName does not exist"
+                    }
+
+    /followers:
+      get:
+        description: Returns the list of users following this person
+        securedBy:
+          - SessionToken
+        responses:
+          200:
+            body:
+              application/json:
+                example: |
+                  [
+                    {
+                      "userName": "JohnDoe",
+                      "uri": "/users/johndoe"                  
+                    },
+                    {
+                      "userName": "JaneDoe",
+                      "uri": "/users/janedoe"
+                    }
+                  ]
+          400:
+            description: Username does not exist
+            body:
+              application/json:
+                example: |
+                  {
+                    error: "username does not exist"
+                  }
+    /mentions:
+      get:
+        description: Returns list of mentions of a person.
+        securedBy:
+          - SessionToken
+        responses:
+          200:
+            body:
+              application/json:
+                example: |
+                  [
+                    {
+                      "uri" : "/wightstuff/posts/345",
+                      "userName" : "wightstuff",
+                      "timestamp": "2010-12-16T12:14:05+00:00",
+                      "content": "This is a @user",
+                      "postID" : 345            
+                    }, 
+                    {
+                      "uri" : "/Boogers/posts/345",
+                      "userName": "Boogers",
+                      "timestamp": "2010-10-16T12:04:05+00:00",
+                      "content": "This is a @user",
+                      "postID" : 222            
+                    }
+                  ]
+
+/signin:
+  displayName: Sign In
   post:
     description: Logs in a user, establishes a session
     body:
       application/json:
-    example: |
-     { "user" : "BillyJoe",
-        "password" : "I hate Java"
-      }
-    responses:
-      200: #login successful
-      401: #not authorized
-
-/signout:
-  post:
-    description: Logs out a user, destroys the session
-    responses:
-      200: #login successful
-
-/{username}: 
-  description: Profile of {username}
-  get:
-    description: Returns the information for the user, including number 
-      followers, following, mentions
-    responses:
-      200:
-        body:
-          application/json:
-            example: |
-             {
-                "username" : "user",
-                "displayName" : "Test User",
-                "tagline" : "Java is my life.",
-                "followers" : 2,
-                "following" : 2,
-                "mentions" : 3
-             }
-      401: #not authorized
-
-  post:
-    description: Submits a new message to the logged in feed
-    body:
-      application/json:
         example: |
           { 
-            "messageContents" : "Example message to post."
+            "user" : "w3etz@unb.ca",
+            "password" : "12345678"
           }
     responses:
-      201: #Successfully added
+      200:
+        description: Successfully logged in
         body:
           application/json:
             example: |
               {
-                    "message": {
-                        "uri" : "/wightstuff/posts/345",
-                        "displayname" : "wightstuff",
-                        "timePosted": "2010-12-16T12:14:05+00:00",
-                        "messageContents": "This is a posted message",
-                        "messageID" : 345            
-                    }
+                "X-Session-Token": "1232314-sdfsa234r-asdf23eds"
               }
-      401: #not authorized
-
-  /posts/{postid}
-    delete: 
-      description: Delete a specified message if in the logged in feed
-
-  /following:
-     get:
-      description: Returns a list of users this person follows
-      responses:
-        200:
-          body:
-            application/json:
-              example: |
-                {
-                  [{
-                      "userName": "JohnDoe",
-                      "schoolID": "3509321"               
-                  },
-                  {
-                      "userName": "JaneDoe",
-                      "schoolID": "3509322"               
-                  }],
-                  "following": 2
-                }
-       401: #not authorized
-
-     post:
-      description: Follow a new person
-      responses:
-      201: #Successfully added
+      401:
+        description: Bad or expired session token. To fix you have to re-authenticate the user.
         body:
           application/json:
             example: |
-              {"user": {
-                   "userName": "JaneDoe",
-                   "schoolID": "3509322" 
-              }
-      401: #not authorized
-
-    delete:
-      description: remove a new person
-      responses:
-      200: #Successfully removed
-        body:
-          application/json:
-            example: |
-              {"user": {
-                   "userName": "JaneDoe",
-                   "schoolID": "3509322" 
+              {
+                error: "Unauthorized"
               }
 
-  /followers:
-     get:
-      description: Returns the list of users following this person
-      responses:
-        200:
-          body:
-            application/json:
-              example: |
-                {
-                  users:
-                  [{
-                      "userName": "JohnDoe",
-                      "schoolID": "3509321"               
-                  },
-                  {
-                      "userName": "JaneDoe",
-                      "schoolID": "3509322"               
-                  }],
-                  "followers": 2
-                }
-      401: #not authorized
-
-  /mentions:
-     get:
-      description: Returns list of mentions of a person.
-      responses:
-        200:
-          body:
-            application/json:
-              example: |
-                {
-                  "messages": 
-                     [{
-                       "uri" : "/wightstuff/posts/345",
-                       "displayname" : "wightstuff",
-                       "timePosted": "2010-12-16T12:14:05+00:00",
-                       "messageContents": "This is a @user",
-                       "messageID" : 345
-                     },
-                     {
-                       "uri" : "/Boogers/posts/345",
-                       "displayname" : "Boogers",
-                       "timePosted": "2010-10-16T12:04:05+00:00",
-                       "messageContents": "This is a @user",
-                       "messageID" : 222            
-                     }],
-                  "mentions": 2
-                }
-      401: #not authorized
+/signout:
+  displayName: Sign Out
+  post:
+    description: Logs out a user, destroys the session
+    securedBy:
+      - SessionToken
+    responses:
+      200:
+        description: Logout Successfull, Invalidate Session
