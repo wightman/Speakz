@@ -27,12 +27,6 @@ version: 0.3
                     "messageID" : 344
                 }],
              }
-
-/Signup:
-  post:
-    description: Create a new account
-    responses:
-      201: #create successful
   
 /Login: 
   post:
@@ -41,12 +35,10 @@ version: 0.3
       201: #login successful
       401: #not authorized
 
-/Logout:
-  post:
+  delete:
     description: Logs out a user, destroys the session
     responses:
-      201: #login successful
-
+      200: #success
 
 /Users:
   get:
@@ -96,14 +88,14 @@ version: 0.3
               }
       401: #not authorized
 
-/User/{username}/Speakz:
+/Users/{username}/Speakz:
   get:
     description: Returns a list of all Speakz from the user.
     responses: 
       200:
 
 /Users/{username}/Speakz/{speakzid}:
-  post: 
+  delete: 
     description: Undisplays a specified message if in the logged in feed
   put:
     description: Edit your own Speak
@@ -142,19 +134,6 @@ version: 0.3
                 }
         401: #not authorized
 
-
-/Users/{username}/Following/{username}:    
-    delete:
-      description: remove a follower
-      responses:
-        200: #Successfully removed
-          body:
-            application/json:
-              example: |
-                {"user": {
-                     "userName": "JaneDoe",
-                     "schoolID": "3509322" 
-                }
 
 /Users/{username}/Followers:
      get:
@@ -214,12 +193,6 @@ version: 0.3
 
   post: 
     description: Add new profile settings
-    responses:
-      200:
-
-/Users/{username}/Preferences/{preference}:
-  put:
-    description: Update profile settings
     responses:
       200:
 
