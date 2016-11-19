@@ -4,13 +4,7 @@ from flask_session import Session
 import json
 
 class Users(Resource):
-	#
-	#
-	#
-	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X GET
-	#  	-k cookie-jar  http://localhost:20500/Users
-	#
+	# curl -i -H "Content-Type: application/json" -X GET -k cookie-jar  http://localhost:20500/Users
 	def get(self):
 		for piece in session:
 			print piece

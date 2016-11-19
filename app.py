@@ -4,7 +4,6 @@ from flask import Flask, jsonify, abort, request, make_response, session
 from flask_restful import reqparse, Resource, Api
 from flask_session import Session
 import json
-
 import settings # Our server and db settings, stored in settings.py
 
 # force std to use utf-8
@@ -15,10 +14,9 @@ app = Flask(__name__)
 # Set Server-side session config: Save sessions in the local app directory.
 app.secret_key = settings.SECRET_KEY
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_COOKIE_NAME'] = 'peanutButter'
+app.config['SESSION_COOKIE_NAME'] = 'speakz'
 app.config['SESSION_COOKIE_DOMAIN'] = settings.APP_HOST
 Session(app)
-
 
 
 ####################################################################################
@@ -44,9 +42,7 @@ class Login(Resource):
 	# Set Session and return Cookie
 	#
 	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X POST -d '{"username": "Tom", "password": "crapcrap"}'
-	#  	-c cookie-jar  http://localhost:20500/Login
-	#
+	# curl -i -H "Content-Type: application/json" -X POST -d '{"username": "Tom", "password": "crapcrap"}' -c cookie-jar  http://localhost:20500/Login
 	def post(self):
 
 		if not request.json:
@@ -97,7 +93,16 @@ class Login(Resource):
 		session.clear()
 		return make_response(jsonify({'status': 'success'}), 200)
 
-from Users import Users
+
+from modules.Users import Users
+from modules.User import User
+from modules.Speakzs import Speakzs
+from modules.Speakz import Speakz
+from modules.Following import Following
+from modules.Followers import Followers
+from modules.Mentions import Mentions
+from modules.UserPreference import UserPreference
+from modules.Hashtags import Hashtags
 ####################################################################################
 #
 # Identify/create endpoints and endpoint objects
@@ -105,14 +110,14 @@ from Users import Users
 api = Api(app)
 api.add_resource(Login, '/Login')
 api.add_resource(Users,'/Users')
-#api.add_resource(User,'/Users/{username}')
-#api.add_resource(Speakzs,'/Users/{username}/Speakz')
-#api.add_resource(Speakz,'/Users/{username}/Speakz/{speakzid}')
-#api.add_resource(Following,'/Users/{username}/Following')
-#api.add_resource(Followers,'/Users/{username}/Followers')
-#api.add_resource(Mentions,'/Users/{username}/Mentions')
-#api.add_resource(UserPreferences,'/Users/{username}/Preferences')
-#api.add_resource(Hastags,'/Hashtag/{hashtag}')
+api.add_resource(User,'/Users/<string:username>')
+api.add_resource(Speakzs,'/Users/<string:username>/Speakz')
+api.add_resource(Speakz,'/Users/<string:username>/Speakz/<int:speakzid>')
+api.add_resource(Following,'/Users/<string:username>/Following')
+api.add_resource(Followers,'/Users/<string:username>/Followers')
+api.add_resource(Mentions,'/Users/<string:username>/Mentions')
+api.add_resource(UserPreference,'/Users/<string:username>/Preference')
+api.add_resource(Hashtags,'/Hashtag/<string:hashtag>')
 
 
 #############################################################################
