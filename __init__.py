@@ -18,7 +18,8 @@ sys.setdefaultencoding('utf-8')
 app = Flask(__name__)
 # Set Server-side session config: Save sessions in the local app directory.
 app.secret_key = settings.SECRET_KEY
-app.config['SESSION_TYPE'] = 'redis' # not tested!
+#app.config['SESSION_TYPE'] = 'redis' # not tested!
+app.config['SESSION_TYPE'] = 'filesystem' #
 app.config['SESSION_COOKIE_NAME'] = 'speakz.ca'
 app.config['SESSION_COOKIE_DOMAIN'] = settings.APP_HOST
 Session(app)
@@ -48,8 +49,7 @@ class Login(Resource):
 	# Set Session and return Cookie
 	#
 	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X POST -d '{"username": "Casper", "password": "crap"}'
-	#  	-c cookie-jar -k https://info3103.cs.unb.ca:61340/signin
+	# curl -i -H "Content-Type: application/json" -X POST -d '{"username": "Casper", "password": "crap"}' -c cookie-jar https://speakz.ca/signin
 	#
 	def post(self):
 
@@ -91,32 +91,32 @@ class Login(Resource):
 	# GET: Check Cookie data with Session data
 	#
 	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X GET -b cookie-jar
-	#	-k https://info3103.cs.unb.ca:61340/signin
+	# curl -i -H "Content-Type: application/json" -X GET -b cookie-jar  https://speakz.ca/Login
 	def get(self):
 		success = False
 		if 'username' in session:
-			username = session['username']
 			response = {'status': 'success'}
 			responseCode = 200
 		else:
 			response = {'status': 'fail'}
-			responseCode = 403
+			responseCode = 404
 
 		return make_response(jsonify(response), responseCode)
 
 	# DELETE: Check Cookie data with Session data
 	#
 	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X DELETE -b cookie-jar
-	#	-k https://info3103.cs.unb.ca:61340/signin
+	# curl -i -H "Content-Type: application/json" -X DELETE -b cookie-jar https://speakz.ca/signin
 
-	#
-	#	Here's your chance to shine!
-	#
 	def delete(self):
-		session.clear()
-		return make_response(jsonify({'status': 'success'}), 200)
+		if 'username' in session:
+			session.clear()
+			response = {'status': 'success'}
+			responseCode = 200
+		else:
+			response = {'status': 'fail'}
+			responseCode = 404
+		return make_response(jsonify(response), responseCode)
 
 
 from modules.Users import Users
@@ -149,6 +149,6 @@ api.add_resource(Hashtags,'/Hashtag/<string:hashtag>')
 if __name__ == "__main__":
 	#
 	# Apache is minding the ssl
-	#context = ('cert.pem', 'key.pem') # Identify the certificates you've generated.
+	#context = ('cert.pem', 'key.pem') 
 	#app.run(host=settings.APP_HOST, port=settings.APP_PORT, ssl_context=context, debug=settings.APP_DEBUG)
    	app.run(host=settings.APP_HOST, debug=settings.APP_DEBUG) # not tested

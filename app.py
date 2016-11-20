@@ -14,8 +14,7 @@ app = Flask(__name__)
 # Set Server-side session config: Save sessions in the local app directory.
 app.secret_key = settings.SECRET_KEY
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_COOKIE_NAME'] = 'speakz'
-app.config['SESSION_COOKIE_DOMAIN'] = settings.APP_HOST
+app.config['SESSION_COOKIE_NAME'] = 'speakz.ca'
 Session(app)
 
 
@@ -33,9 +32,8 @@ def not_found(error):
 
 ####################################################################################
 #
-# Routing: GET and POST using Flask-Session
+# Login: Manages creation (POST) and removal (DELETE) using Flask-Session
 #
-# Demonstration only!
 #
 class Login(Resource):
 	# POST: Set Session and return Cookie
@@ -75,13 +73,6 @@ class Login(Resource):
 				session['username'] = request_params['username']
 				response = {'status': 'success'}
 				responseCode = 201
-
-				# temporary solution: populate session.json
-				with open('session.json', 'w') as outfile:
-					data = {}
-					for index in session:
-						data[index] = session[index]
-					json.dump(data, outfile)
 			else:
 				response = {'status': 'Access denied'}
 				responseCode = 403
@@ -89,16 +80,30 @@ class Login(Resource):
 		return make_response(jsonify(response), responseCode)
 
 
+	# GET: Check Cookie data with Session data
+	# curl -i -H "Content-Type: application/json" -X GET -b cookie-jar  http://localhost:20500/Login
+	def get(self):
+		if 'username' in session:
+			response = {'status': 'success'}
+			responseCode = 200
+		else:
+			response = {'status': 'failure'}
+			responseCode = 404
+
+		return make_response(jsonify(response), responseCode)
+
 	# DELETE: Check Cookie data with Session data
-	# curl -i -H "Content-Type: application/json" -X DELETE -k cookie-jar  http://localhost:20500/Login
+	# curl -i -H "Content-Type: application/json" -X DELETE -b cookie-jar  http://localhost:20500/Login
 	def delete(self):
-		session.clear()
+		if 'username' in session:
+			session.clear()
+			response = {'status': 'success'}
+			responseCode = 200
+		else:
+			response = {'status': 'failure'}
+			responseCode = 404
 
-		# temporary solution: clear session.json
-		with open('session.json', 'w') as outfile:
-			json.dump({}, outfile)
-
-		return make_response(jsonify({'status': 'success'}), 200)
+		return make_response(jsonify(response), responseCode)
 
 
 from modules.Users import Users
