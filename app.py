@@ -38,10 +38,7 @@ def not_found(error):
 # Demonstration only!
 #
 class Login(Resource):
-	#
-	# Set Session and return Cookie
-	#
-	# Example curl command:
+	# POST: Set Session and return Cookie
 	# curl -i -H "Content-Type: application/json" -X POST -d '{"username": "Tom", "password": "crapcrap"}' -c cookie-jar  http://localhost:20500/Login
 	def post(self):
 
@@ -73,24 +70,34 @@ class Login(Resource):
 				login = True
 			elif username == 'Mary' and password == 'crapcrap':
 				login = True
+
 			if(login):
 				session['username'] = request_params['username']
-				response = {'status': 'success' }
+				response = {'status': 'success'}
 				responseCode = 201
+
+				# temporary solution: populate session.json
+				with open('session.json', 'w') as outfile:
+					data = {}
+					for index in session:
+						data[index] = session[index]
+					json.dump(data, outfile)
 			else:
 				response = {'status': 'Access denied'}
 				responseCode = 403
-		for piece in session:
-			print session
+
 		return make_response(jsonify(response), responseCode)
 
+
 	# DELETE: Check Cookie data with Session data
-	#
-	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X DELETE
-	#  	-k cookie-jar  http://localhost:20500/Login
+	# curl -i -H "Content-Type: application/json" -X DELETE -k cookie-jar  http://localhost:20500/Login
 	def delete(self):
 		session.clear()
+
+		# temporary solution: clear session.json
+		with open('session.json', 'w') as outfile:
+			json.dump({}, outfile)
+
 		return make_response(jsonify({'status': 'success'}), 200)
 
 
@@ -122,7 +129,6 @@ api.add_resource(Hashtags,'/Hashtag/<string:hashtag>')
 
 #############################################################################
 if __name__ == "__main__":
-	#
 	# Running in a local testing context - no ssl needed.
 	#context = ('cert.pem', 'key.pem') # Identify the certificates you've generated.
    	app.run(host=settings.APP_HOST, port=settings.APP_PORT, debug=settings.APP_DEBUG)
