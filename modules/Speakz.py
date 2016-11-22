@@ -4,15 +4,22 @@ from flask_session import Session
 import json
 
 class Speakz(Resource):
-  # curl -i -H "Content-Type: application/json" -X GET -k cookie-jar  http://localhost:20500/Users
-  def get(self):
-    
-    for piece in session:
-      print piece
+  # curl -i -H "Content-Type: application/json" -X DELETE -b cookie-jar -k http://localhost:20500/Users/tom/Speakz/1
+  def delete(self, username, speakzid):
     if 'username' in session:
-      response = {'endpoint': '/Users', 'verb':'get', 'status':'success'}
+      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'verb':'delete', 'status':'success'}
       responseCode = 200
     else:
-      response = {'endpoint': '/Users', 'verb':'get', 'status':'failure'}
+      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'verb':'delete', 'status':'failure'}
+      responseCode = 401
+    return make_response(jsonify(response), responseCode)
+
+  # curl -i -H "Content-Type: application/json" -X PUT -d '{"data": "updated data"}' -b cookie-jar -k http://localhost:20500/Users/tom/Speakz/1
+  def put(self, username, speakzid):
+    if 'username' in session:
+      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'data':('{0}'.format(request.json['data'])), 'verb':'put', 'status':'success'}
+      responseCode = 200
+    else:
+      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'data':('{0}'.format(request.json['data'])), 'verb':'put', 'status':'failure'}
       responseCode = 401
     return make_response(jsonify(response), responseCode)

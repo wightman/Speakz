@@ -4,7 +4,7 @@ from flask_session import Session
 import json
 
 class Users(Resource):
-	# curl -i -H "Content-Type: application/json" -X GET -c cookie-jar -k http://localhost:20500/Users
+	# curl -i -H "Content-Type: application/json" -X GET -b cookie-jar -k http://localhost:20500/Users
 	def get(self):
 		if 'username' in session:
 			response = {'endpoint': '/Users', 'verb':'get', 'status':'success'}
