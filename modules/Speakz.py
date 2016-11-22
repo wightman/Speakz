@@ -14,12 +14,12 @@ class Speakz(Resource):
       responseCode = 401
     return make_response(jsonify(response), responseCode)
 
-  # curl -i -H "Content-Type: application/json" -X PUT -d '{"data": "updated data"}' -b cookie-jar -k http://localhost:20500/Users/tom/Speakz/1
+  # curl -i -H "Content-Type: application/json" -X PUT -d '{"post": "edited post"}' -b cookie-jar -k http://localhost:20500/Users/tom/Speakz/1
   def put(self, username, speakzid):
     if 'username' in session:
-      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'data':('{0}'.format(request.json['data'])), 'verb':'put', 'status':'success'}
+      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'post':('{0}'.format(request.json['post'])), 'verb':'put', 'status':'success'}
       responseCode = 200
     else:
-      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'data':('{0}'.format(request.json['data'])), 'verb':'put', 'status':'failure'}
+      response = {'endpoint': ('/Users/{0}/Speakz/{1}'.format(username, speakzid)), 'post':('{0}'.format(request.json['post'])), 'verb':'put', 'status':'failure'}
       responseCode = 401
     return make_response(jsonify(response), responseCode)
