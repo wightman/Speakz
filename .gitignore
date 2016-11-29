@@ -2,3 +2,4 @@
 *.pyc
 flask_session
 settings.py
+cookie-jar
