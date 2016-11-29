@@ -15,12 +15,13 @@ import settings # Our server and db settings, stored in settings.py
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-app = Flask(__name__)
-# Set Server-side session config: Save sessions in the local app directory.
-app.secret_key = settings.SECRET_KEY
+app = Flask(__name__, static_url_path="")
+# Application's Secret key is set in /var/www/speakz/speakz.wsgi
+#app.secret_key = settings.SECRET_KEY
+
 #app.config['SESSION_TYPE'] = 'redis' # not tested!
 app.config['SESSION_TYPE'] = 'filesystem' #
-app.config['SESSION_COOKIE_NAME'] = 'speakz.ca'
+app.config['SESSION_COOKIE_NAME'] = settings.APP_HOST
 app.config['SESSION_COOKIE_DOMAIN'] = settings.APP_HOST
 Session(app)
 
@@ -38,11 +39,18 @@ def not_found(error):
 def not_found(error):
 	return make_response(jsonify( { 'status': 'Resource not found' } ), 404)
 
+
+#
+#	Default hit returns the client application
+#
+@app.route('/')
+def root():
+	return app.send_static_file('index.html')
+
 ####################################################################################
 #
 # Routing: GET and POST using Flask-Session
 #
-# Demonstration only!
 #
 class Login(Resource):
 	#
@@ -149,6 +157,4 @@ api.add_resource(Hashtags,'/Hashtag/<string:hashtag>')
 if __name__ == "__main__":
 	#
 	# Apache is minding the ssl
-	#context = ('cert.pem', 'key.pem') 
-	#app.run(host=settings.APP_HOST, port=settings.APP_PORT, ssl_context=context, debug=settings.APP_DEBUG)
-   	app.run(host=settings.APP_HOST, debug=settings.APP_DEBUG) # not tested
+   	app.run()
