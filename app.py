@@ -106,15 +106,16 @@ class Login(Resource):
 		return make_response(jsonify(response), responseCode)
 
 
-from modules.Users import Users
-from modules.User import User
-from modules.Speakzs import Speakzs
-from modules.Speakz import Speakz
-from modules.Following import Following
-from modules.Followers import Followers
-from modules.Mentions import Mentions
-from modules.UserPreference import UserPreference
-from modules.Hashtags import Hashtags
+from resources.Login import Login
+from resources.Users import Users
+from resources.User import User
+from resources.Speakzs import Speakzs
+from resources.Speakz import Speakz
+from resources.Following import Following
+from resources.Followers import Followers
+from resources.Mentions import Mentions
+from resources.UserPreference import UserPreference
+from resources.Hashtags import Hashtags
 ####################################################################################
 #
 # Identify/create endpoints and endpoint objects
