@@ -13,8 +13,7 @@ class Login(Resource):
 	# Set Session and return Cookie
 	#
 	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X POST -d '{"username": "Casper", "passwo
-rd": "crap"}' -c cookie-jar https://speakz.ca/Login
+	# curl -i -H "Content-Type: application/json" -X POST -d '{"username": "Casper", "password": "crap"}' -c cookie-jar https://speakz.ca/Login
 	#
 	def post(self):
 
@@ -54,8 +53,7 @@ rd": "crap"}' -c cookie-jar https://speakz.ca/Login
 	# GET: Check Cookie data with Session data
 	#
 	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X GET -b cookie-jar  https://speakz.ca/Lo
-gin
+	# curl -i -H "Content-Type: application/json" -X GET -b cookie-jar  https://speakz.ca/Login
 	def get(self):
 		success = False
 		if 'username' in session:
@@ -70,8 +68,7 @@ gin
 	# DELETE: Check Cookie data with Session data
 	#
 	# Example curl command:
-	# curl -i -H "Content-Type: application/json" -X DELETE -b cookie-jar https://speakz.ca/
-signin
+	# curl -i -H "Content-Type: application/json" -X DELETE -b cookie-jar https://speakz.ca/Login
 
 	def delete(self):
 		if 'username' in session:
